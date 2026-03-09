@@ -3916,7 +3916,7 @@ Todos os direitos reservados.`;
 
           {/* Gestão Cadastral (somente no Puxa Tudo) */}
           {!isSlimMode && (
-            <div id="gestao-cadastral-section">
+            <div id="gestao-cadastral-section" className={gestaoCount === 0 ? 'hidden' : ''}>
               <GestaoSection cpfId={result.id} onCountChange={setGestaoCount} />
             </div>
           )}
