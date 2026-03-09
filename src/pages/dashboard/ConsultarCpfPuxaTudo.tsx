@@ -3875,19 +3875,19 @@ Todos os direitos reservados.`;
           {/* Operadoras (somente no Puxa Tudo) */}
           {!isSlimMode && (
             <>
-              <div id="claro-section">
+              <div id="claro-section" className={claroCount === 0 ? 'hidden' : ''}>
                 <ClaroSection cpfId={result.id} onCountChange={setClaroCount} />
               </div>
 
-              <div id="vivo-section">
+              <div id="vivo-section" className={vivoCount === 0 ? 'hidden' : ''}>
                 <VivoSection cpfId={result.id} onCountChange={setVivoCount} />
               </div>
 
-              <div id="tim-section">
+              <div id="tim-section" className={timCount === 0 ? 'hidden' : ''}>
                 <OperadoraTimSection cpfId={result.id} onCountChange={setTimCount} />
               </div>
 
-              <div id="oi-section">
+              <div id="oi-section" className={oiCount === 0 ? 'hidden' : ''}>
                 <OperadoraOiSection cpfId={result.id} onCountChange={setOiCount} />
               </div>
             </>
