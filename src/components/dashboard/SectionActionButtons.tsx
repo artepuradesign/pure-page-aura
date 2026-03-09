@@ -77,41 +77,147 @@ const exportVisualPdf = async (
             el.style.width = '100%';
           });
 
-          // Fix text alignment inside field containers
-          clonedEl.querySelectorAll<HTMLElement>('input, [class*="border-b"], [class*="border-input"]').forEach(el => {
+          // ===== FIX: Input fields - ensure text is visible and aligned =====
+          clonedEl.querySelectorAll<HTMLElement>('input').forEach(el => {
             el.style.textAlign = 'left';
-            el.style.paddingLeft = '8px';
+            el.style.paddingLeft = '12px';
+            el.style.paddingRight = '12px';
+            el.style.height = 'auto';
+            el.style.minHeight = '36px';
+            el.style.lineHeight = '36px';
+            el.style.opacity = '1';
+            el.style.color = '#111827';
+            el.style.webkitTextFillColor = '#111827';
+            el.style.border = '1px solid #d1d5db';
+            el.style.borderRadius = '6px';
+            el.style.backgroundColor = '#f9fafb';
+            el.style.fontSize = '13px';
+            el.style.overflow = 'visible';
+            el.style.textOverflow = 'ellipsis';
+            el.style.whiteSpace = 'nowrap';
           });
 
-          // --- Fotos: replace with count-only summary ---
+          // ===== FIX: Badges with absolute positioned counts =====
+          clonedEl.querySelectorAll<HTMLElement>('.relative.inline-flex').forEach(el => {
+            el.style.position = 'relative';
+            el.style.display = 'inline-flex';
+            el.style.overflow = 'visible';
+            // Fix the count badge inside
+            const countBadge = el.querySelector<HTMLElement>('.absolute.-top-2, [class*="absolute"][class*="-top-2"]');
+            if (countBadge) {
+              countBadge.style.position = 'absolute';
+              countBadge.style.top = '-8px';
+              countBadge.style.right = '-8px';
+              countBadge.style.zIndex = '10';
+              countBadge.style.display = 'flex';
+              countBadge.style.alignItems = 'center';
+              countBadge.style.justifyContent = 'center';
+            }
+          });
+
+          // ===== FIX: Shortcut badges at top - ensure proper wrapping =====
+          clonedEl.querySelectorAll<HTMLElement>('.flex.flex-wrap').forEach(el => {
+            el.style.display = 'flex';
+            el.style.flexWrap = 'wrap';
+            el.style.gap = '8px';
+            el.style.overflow = 'visible';
+          });
+
+          // ===== FIX: Score gauge cards - fix SVG rendering =====
+          clonedEl.querySelectorAll<HTMLElement>('svg').forEach(svg => {
+            svg.style.overflow = 'visible';
+            // Ensure SVG dimensions are explicit for html2canvas
+            const svgEl = svg as unknown as SVGSVGElement;
+            if (svgEl.getAttribute('viewBox')) {
+              svg.style.width = '100%';
+              svg.style.height = 'auto';
+            }
+          });
+
+          // Fix score gauge containers (aspect-ratio may not render in html2canvas)
+          clonedEl.querySelectorAll<HTMLElement>('[style*="aspect-ratio"]').forEach(el => {
+            const ratio = el.style.aspectRatio;
+            if (ratio) {
+              const [w, h] = ratio.split('/').map(Number);
+              if (w && h) {
+                const width = el.offsetWidth || 200;
+                el.style.height = `${(width * h) / w}px`;
+                el.style.aspectRatio = '';
+              }
+            }
+          });
+          // Also handle Tailwind aspect-ratio classes
+          clonedEl.querySelectorAll<HTMLElement>('[class*="aspect-"]').forEach(el => {
+            const computedStyle = window.getComputedStyle(el);
+            const ratio = computedStyle.aspectRatio;
+            if (ratio && ratio !== 'auto') {
+              const [w, h] = ratio.split('/').map(s => parseFloat(s.trim()));
+              if (w && h) {
+                const width = el.offsetWidth || 200;
+                el.style.height = `${(width * h) / w}px`;
+                el.style.aspectRatio = '';
+              }
+            }
+          });
+
+          // ===== FIX: Score display overlay (absolute positioning inside gauge) =====
+          clonedEl.querySelectorAll<HTMLElement>('.absolute.inset-0').forEach(el => {
+            el.style.position = 'absolute';
+            el.style.top = '0';
+            el.style.left = '0';
+            el.style.right = '0';
+            el.style.bottom = '0';
+          });
+
+          // ===== FIX: Fotos section - KEEP actual photos instead of replacing =====
           const fotosSection = clonedEl.querySelector('#fotos-section') as HTMLElement;
           if (fotosSection) {
-            // Get the count from the badge
-            const badge = fotosSection.querySelector('.absolute.-top-2') as HTMLElement;
-            const countText = badge?.textContent?.trim() || '0';
-            const count = parseInt(countText, 10) || 0;
-
-            if (count > 0) {
-              fotosSection.innerHTML = `
-                <div style="border:1px solid #e5e7eb; border-radius:12px; padding:16px; background:#f0fdf4; border-color:#bbf7d0;">
-                  <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                    <span style="font-size:18px;">📷</span>
-                    <strong style="font-size:15px;">Fotos</strong>
-                    <span style="background:#16a34a; color:white; font-size:11px; padding:2px 8px; border-radius:10px; margin-left:8px;">ONLINE</span>
-                  </div>
-                  <p style="color:#374151; font-size:13px; margin:0;">${count} foto(s) encontrada(s)</p>
-                </div>
-              `;
-            } else {
-              fotosSection.style.display = 'none';
-            }
+            // Make all images visible and properly sized
+            fotosSection.querySelectorAll<HTMLElement>('img').forEach(img => {
+              img.style.display = 'block';
+              img.style.width = '100%';
+              img.style.height = '100%';
+              img.style.objectFit = 'cover';
+              img.setAttribute('crossorigin', 'anonymous');
+            });
+            // Hide hover overlay buttons (they show on hover only)
+            fotosSection.querySelectorAll<HTMLElement>('.opacity-0').forEach(el => {
+              el.style.display = 'none';
+            });
+            // Ensure photo grid is visible
+            fotosSection.querySelectorAll<HTMLElement>('.overflow-hidden').forEach(el => {
+              el.style.overflow = 'visible';
+            });
           }
 
-          // --- Score: hide if no data ---
+          // ===== FIX: Hide interactive-only elements that don't belong in PDF =====
+          clonedEl.querySelectorAll<HTMLElement>('.group-hover\\:opacity-100, [class*="group-hover"]').forEach(el => {
+            // Don't display hover-only overlays
+            if (el.classList.contains('opacity-0')) {
+              el.style.display = 'none';
+            }
+          });
+
+          // ===== FIX: Labels should be visible =====
+          clonedEl.querySelectorAll<HTMLElement>('label').forEach(el => {
+            el.style.display = 'block';
+            el.style.marginBottom = '4px';
+            el.style.fontSize = '12px';
+            el.style.color = '#6b7280';
+          });
+
+          // ===== FIX: Card borders and backgrounds =====
+          clonedEl.querySelectorAll<HTMLElement>('[class*="border-success"]').forEach(el => {
+            el.style.borderColor = '#86efac';
+          });
+          clonedEl.querySelectorAll<HTMLElement>('[class*="bg-success-subtle"]').forEach(el => {
+            el.style.backgroundColor = '#f0fdf4';
+          });
+
+          // ===== FIX: Score section - hide if no data =====
           const scoreSection = clonedEl.querySelector('#score-section') as HTMLElement;
           if (scoreSection) {
             const scoreText = scoreSection.textContent || '';
-            // If score is 0 or empty, hide
             const scoreMatch = scoreText.match(/(\d+)/);
             const scoreVal = scoreMatch ? parseInt(scoreMatch[1], 10) : 0;
             if (scoreVal <= 0) {
