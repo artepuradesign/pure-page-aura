@@ -122,29 +122,40 @@ const exportVisualPdf = async (
             const value = (el as HTMLInputElement).value || '';
             const div = clonedDoc.createElement('div');
             div.textContent = value || '—';
+            div.style.display = 'flex';
+            div.style.alignItems = 'center';
             div.style.textAlign = 'left';
             div.style.paddingLeft = '12px';
             div.style.paddingRight = '12px';
             div.style.height = '36px';
-            div.style.lineHeight = '36px';
             div.style.color = '#111827';
             div.style.border = '1px solid #d1d5db';
             div.style.borderRadius = '6px';
             div.style.backgroundColor = '#f9fafb';
             div.style.fontSize = '13px';
             div.style.overflow = 'hidden';
-            div.style.textOverflow = 'ellipsis';
             div.style.whiteSpace = 'nowrap';
             el.parentNode?.replaceChild(div, el);
           });
 
-          // ===== FIX: Badge count circles - force explicit sizing and centering =====
+          // ===== FIX: Badge labels - force flex centering =====
           clonedEl.querySelectorAll<HTMLElement>('.relative.inline-flex').forEach(wrapper => {
             wrapper.style.position = 'relative';
             wrapper.style.display = 'inline-flex';
+            wrapper.style.alignItems = 'center';
             wrapper.style.overflow = 'visible';
             wrapper.style.marginRight = '6px';
             wrapper.style.marginTop = '4px';
+          });
+
+          // Fix badge text centering
+          clonedEl.querySelectorAll<HTMLElement>('[class*="badge"], [class*="Badge"]').forEach(badge => {
+            badge.style.display = 'inline-flex';
+            badge.style.alignItems = 'center';
+            badge.style.justifyContent = 'center';
+            badge.style.lineHeight = '1';
+            badge.style.paddingTop = '4px';
+            badge.style.paddingBottom = '4px';
           });
           
           // Fix the absolute count bubbles with explicit inline styles
