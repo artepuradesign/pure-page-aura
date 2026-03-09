@@ -3846,7 +3846,7 @@ Todos os direitos reservados.`;
 
           {/* Dívidas Ativas (SIDA) */}
           {(!isSlimMode || isExclusiveMode) && showDividasAtivasSection && (
-            <div id="dividas-ativas-section">
+            <div id="dividas-ativas-section" className={dividasAtivasCount === 0 ? 'hidden' : ''}>
               <DividasAtivasSection cpf={result.id.toString()} onCountChange={setDividasAtivasCount} />
             </div>
           )}
