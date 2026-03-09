@@ -3804,7 +3804,7 @@ Todos os direitos reservados.`;
 
           {/* Documento (somente no Puxa Tudo) */}
           {!isSlimMode && (
-            <div id="documento-section">
+            <div id="documento-section" className={documentoCount === 0 ? 'hidden' : ''}>
               <DocumentoSection cpfId={result.id} onCountChange={setDocumentoCount} />
             </div>
           )}
