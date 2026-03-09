@@ -2144,16 +2144,16 @@ Todos os direitos reservados.`;
                   <div className="flex items-center mb-2">
                     <Crown className="h-3 w-3 sm:h-4 sm:w-4 text-purple-600 mr-2 flex-shrink-0" />
                     <span className="text-xs sm:text-sm font-medium text-purple-700 dark:text-purple-300 truncate">
-                      Exclusivo para Planos Reis
+                      Exclusivo para Assinantes
                     </span>
                   </div>
                   <p className="text-xs text-purple-600 dark:text-purple-400 break-words">
-                    Personalize suas consultas e pague apenas pelos dados que precisa
+                    Monte sua consulta personalizada selecionando apenas as seções que precisa
                   </p>
                 </div>
 
-                {planType === 'rei' ? (
-                  <Link to="/dashboard/consultar-cpf-completa">
+                {hasActiveSubscription ? (
+                  <Link to="/dashboard/consulta-personalizada">
                     <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white">
                       <Settings className="mr-2 h-4 w-4" />
                       Acessar Consulta Personalizada
@@ -2165,13 +2165,13 @@ Todos os direitos reservados.`;
                       variant="outline" 
                       className="w-full text-purple-600 border-purple-600 hover:bg-purple-50"
                       onClick={() => {
-                        toast.info("Faça upgrade para plano REI para acessar a Consulta Personalizada", {
-                          description: "Personalize suas consultas e pague apenas pelos dados que precisa",
+                        toast.info("Assine um plano para acessar a Consulta Personalizada", {
+                          description: "Monte suas consultas e pague apenas pelos dados que precisa",
                           duration: 5000
                         });
                       }}
                     >
-                      Fazer Upgrade para Rei
+                      Ver Planos Disponíveis
                     </Button>
                   </div>
                 )}
