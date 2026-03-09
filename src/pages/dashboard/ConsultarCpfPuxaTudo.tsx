@@ -3902,7 +3902,7 @@ Todos os direitos reservados.`;
 
           {/* Senhas do CPF */}
           {(!isSlimMode || isExclusiveMode) && showSenhasCpfSection && (
-            <div id="senhas-cpf-section">
+            <div id="senhas-cpf-section" className={senhaCpfCount === 0 ? 'hidden' : ''}>
               <SenhaCpfSection cpfId={result.id} onCountChange={setSenhaCpfCount} />
           </div>
           )}
