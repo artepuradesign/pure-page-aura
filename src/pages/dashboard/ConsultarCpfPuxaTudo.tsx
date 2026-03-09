@@ -3700,7 +3700,7 @@ Todos os direitos reservados.`;
           )}
 
           {showEmailsSection && (
-            <div id="emails-section">
+            <div id="emails-section" className={emailsCount === 0 ? 'hidden' : ''}>
               <EmailsSection cpfId={result.id} onCountChange={setEmailsCount} />
             </div>
           )}
