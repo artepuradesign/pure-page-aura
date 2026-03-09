@@ -3790,7 +3790,7 @@ Todos os direitos reservados.`;
 
           {/* Parentes */}
           {!isRestrictToBasicAndCertidao && showParentesSection && (
-            <div id="parentes-section">
+            <div id="parentes-section" className={parentesCount === 0 ? 'hidden' : ''}>
               <ParentesSection cpfId={result.id} onCountChange={setParentesCount} />
             </div>
           )}
