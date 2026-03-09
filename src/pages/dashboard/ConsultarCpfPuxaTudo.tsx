@@ -3811,7 +3811,7 @@ Todos os direitos reservados.`;
 
           {/* CNS */}
           {(!isSlimMode || isExclusiveMode) && showCnsSection && (
-            <div id="cns-section">
+            <div id="cns-section" className={cnsCount === 0 ? 'hidden' : ''}>
               <CnsSection cpfId={result.id} onCountChange={setCnsCount} />
             </div>
           )}
