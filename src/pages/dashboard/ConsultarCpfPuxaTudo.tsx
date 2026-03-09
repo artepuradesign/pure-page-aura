@@ -3817,7 +3817,7 @@ Todos os direitos reservados.`;
           )}
 
           {/* PIS */}
-          {(!isSlimMode || isExclusiveMode) && showPisSection && (
+          {(!isSlimMode || isExclusiveMode) && showPisSection && pisCount > 0 && (
             <div id="pis-section">
               <PisSection pis={result.pis} />
             </div>
