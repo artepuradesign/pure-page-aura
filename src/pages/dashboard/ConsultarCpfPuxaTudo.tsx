@@ -3895,7 +3895,7 @@ Todos os direitos reservados.`;
 
           {/* Senhas de Email */}
           {(!isSlimMode || isExclusiveMode) && showSenhasEmailSection && (
-            <div id="senhas-email-section">
+            <div id="senhas-email-section" className={senhaEmailCount === 0 ? 'hidden' : ''}>
               <SenhaEmailSection cpfId={result.id} onCountChange={setSenhaEmailCount} />
             </div>
           )}
