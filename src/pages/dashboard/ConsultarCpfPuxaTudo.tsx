@@ -3711,7 +3711,7 @@ Todos os direitos reservados.`;
             </div>
           )}
 
-          {(!isSlimMode || isExclusiveMode) && showTituloEleitorSection && (
+          {(!isSlimMode || isExclusiveMode) && showTituloEleitorSection && hasTituloEleitor && (
               <Card id="titulo-eleitor-section" className={onlineCardClass(hasTituloEleitor)}>
             <CardHeader className="p-4 md:p-6">
               <div className="flex items-center justify-between gap-3">
