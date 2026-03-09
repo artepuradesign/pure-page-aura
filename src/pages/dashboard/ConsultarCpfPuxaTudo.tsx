@@ -3797,7 +3797,7 @@ Todos os direitos reservados.`;
 
           {/* Certidão de Nascimento */}
           {(isRestrictToBasicAndCertidao || !isSlimMode) && (
-            <div id="certidao-nascimento-section">
+            <div id="certidao-nascimento-section" className={certidaoNascimentoCount === 0 ? 'hidden' : ''}>
               <CertidaoNascimentoSection cpfId={result.id} onCountChange={setCertidaoNascimentoCount} />
             </div>
           )}
