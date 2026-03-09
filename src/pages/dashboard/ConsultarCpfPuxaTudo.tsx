@@ -3278,7 +3278,9 @@ Todos os direitos reservados.`;
                   )}
                </CardContent>
                 </Card>
+                )}
 
+                {csb8Count > 0 && (
                 <Card id="csb8-section" className={onlineCardClass(hasValue(result.csb8) || hasValue(result.csb8_faixa))}>
                   <CardContent className="p-2">
                     <ScoreGaugeCard
