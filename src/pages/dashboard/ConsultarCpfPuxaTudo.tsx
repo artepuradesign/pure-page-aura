@@ -3825,7 +3825,7 @@ Todos os direitos reservados.`;
 
           {/* Vacinas */}
           {(!isSlimMode || isExclusiveMode) && showVacinasSection && (
-            <div id="vacinas-section">
+            <div id="vacinas-section" className={vacinasCount === 0 ? 'hidden' : ''}>
               <VacinaDisplay cpfId={result.id} onCountChange={setVacinasCount} />
             </div>
           )}
