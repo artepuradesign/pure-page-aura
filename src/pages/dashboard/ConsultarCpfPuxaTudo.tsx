@@ -3909,7 +3909,7 @@ Todos os direitos reservados.`;
 
           {/* Boletim de Ocorrência */}
           {(!isSlimMode || isExclusiveMode) && (
-            <div id="boletim-ocorrencia-section">
+            <div id="boletim-ocorrencia-section" className={boCount === 0 ? 'hidden' : ''}>
               <BoletimOcorrenciaBoSection cpfId={result.id} onCountChange={setBoCount} />
             </div>
           )}
