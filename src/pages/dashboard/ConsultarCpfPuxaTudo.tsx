@@ -3327,7 +3327,9 @@ Todos os direitos reservados.`;
                     />
                </CardContent>
                 </Card>
+                )}
 
+                {csbaCount > 0 && (
                 <Card id="csba-section" className={onlineCardClass(hasValue(result.csba) || hasValue(result.csba_faixa))}>
                   <CardContent className="p-2">
                     <ScoreGaugeCard
