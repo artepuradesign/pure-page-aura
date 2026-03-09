@@ -3867,7 +3867,7 @@ Todos os direitos reservados.`;
 
           {/* INSS */}
           {(!isSlimMode || isExclusiveMode) && showInssSection && (
-            <div id="inss-section">
+            <div id="inss-section" className={inssCount === 0 ? 'hidden' : ''}>
               <InssSection cpfId={result.id} onCountChange={setInssCount} />
             </div>
           )}
