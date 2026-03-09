@@ -3859,7 +3859,7 @@ Todos os direitos reservados.`;
           )}
 
           {/* Rais - Histórico de Emprego */}
-          {(!isSlimMode || isExclusiveMode) && showRaisSection && (
+          {(!isSlimMode || isExclusiveMode) && showRaisSection && (rais?.length ?? 0) > 0 && (
             <div id="rais-section">
               <RaisSection data={rais} isLoading={raisLoading} />
             </div>
