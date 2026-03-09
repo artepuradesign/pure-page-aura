@@ -3832,7 +3832,7 @@ Todos os direitos reservados.`;
 
           {/* Empresas Associadas (SÓCIO) */}
           {(!isSlimMode || isExclusiveMode) && showEmpresasSocioSection && (
-            <div id="empresas-socio-section">
+            <div id="empresas-socio-section" className={empresasSocioCount === 0 ? 'hidden' : ''}>
               <EmpresasSocioSection cpfId={result.id} onCountChange={setEmpresasSocioCount} />
             </div>
           )}
