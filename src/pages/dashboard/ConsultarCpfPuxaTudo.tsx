@@ -3852,7 +3852,7 @@ Todos os direitos reservados.`;
           )}
 
           {/* Auxílio Emergencial */}
-          {(!isSlimMode || isExclusiveMode) && showAuxilioEmergencialSection && (
+          {(!isSlimMode || isExclusiveMode) && showAuxilioEmergencialSection && (auxiliosEmergenciais?.length ?? 0) > 0 && (
             <div id="auxilio-emergencial-section">
               <AuxilioEmergencialSection auxilios={auxiliosEmergenciais} />
             </div>
