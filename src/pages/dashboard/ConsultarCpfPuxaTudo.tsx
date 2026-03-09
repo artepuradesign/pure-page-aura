@@ -3694,7 +3694,7 @@ Todos os direitos reservados.`;
           )}
 
           {showTelefonesSection && (
-            <div id="telefones-section">
+            <div id="telefones-section" className={telefonesCount === 0 ? 'hidden' : ''}>
               <TelefonesSection cpfId={result.id} onCountChange={setTelefonesCount} />
             </div>
           )}
