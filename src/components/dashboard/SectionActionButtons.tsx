@@ -52,7 +52,7 @@ const exportVisualPdf = async (
     const canvas = await html2canvas(container, {
       scale: 2,
       useCORS: true,
-      allowTaint: true,
+      allowTaint: false,
       backgroundColor: "#ffffff",
       logging: false,
       windowWidth: 900,
@@ -65,6 +65,8 @@ const exportVisualPdf = async (
           clonedEl.style.width = '860px';
           clonedEl.style.padding = '16px';
           clonedEl.style.fontSize = '14px';
+          clonedEl.style.backgroundColor = '#ffffff';
+          clonedEl.style.color = '#111827';
 
           // Force all cards/content to be full width and visible
           clonedEl.querySelectorAll<HTMLElement>('.overflow-hidden, .overflow-x-auto, .overflow-x-hidden').forEach(el => {
@@ -79,22 +81,24 @@ const exportVisualPdf = async (
 
           // ===== FIX: Input fields - ensure text is visible and aligned =====
           clonedEl.querySelectorAll<HTMLElement>('input').forEach(el => {
-            el.style.textAlign = 'left';
-            el.style.paddingLeft = '12px';
-            el.style.paddingRight = '12px';
-            el.style.height = 'auto';
-            el.style.minHeight = '36px';
-            el.style.lineHeight = '36px';
-            el.style.opacity = '1';
-            el.style.color = '#111827';
-            el.style.webkitTextFillColor = '#111827';
-            el.style.border = '1px solid #d1d5db';
-            el.style.borderRadius = '6px';
-            el.style.backgroundColor = '#f9fafb';
-            el.style.fontSize = '13px';
-            el.style.overflow = 'visible';
-            el.style.textOverflow = 'ellipsis';
-            el.style.whiteSpace = 'nowrap';
+            // Replace input with a div showing its value (html2canvas often can't read input values)
+            const value = (el as HTMLInputElement).value || '';
+            const div = clonedDoc.createElement('div');
+            div.textContent = value || '—';
+            div.style.textAlign = 'left';
+            div.style.paddingLeft = '12px';
+            div.style.paddingRight = '12px';
+            div.style.height = '36px';
+            div.style.lineHeight = '36px';
+            div.style.color = '#111827';
+            div.style.border = '1px solid #d1d5db';
+            div.style.borderRadius = '6px';
+            div.style.backgroundColor = '#f9fafb';
+            div.style.fontSize = '13px';
+            div.style.overflow = 'hidden';
+            div.style.textOverflow = 'ellipsis';
+            div.style.whiteSpace = 'nowrap';
+            el.parentNode?.replaceChild(div, el);
           });
 
           // ===== FIX: Badges with absolute positioned counts =====
@@ -102,17 +106,6 @@ const exportVisualPdf = async (
             el.style.position = 'relative';
             el.style.display = 'inline-flex';
             el.style.overflow = 'visible';
-            // Fix the count badge inside
-            const countBadge = el.querySelector<HTMLElement>('.absolute.-top-2, [class*="absolute"][class*="-top-2"]');
-            if (countBadge) {
-              countBadge.style.position = 'absolute';
-              countBadge.style.top = '-8px';
-              countBadge.style.right = '-8px';
-              countBadge.style.zIndex = '10';
-              countBadge.style.display = 'flex';
-              countBadge.style.alignItems = 'center';
-              countBadge.style.justifyContent = 'center';
-            }
           });
 
           // ===== FIX: Shortcut badges at top - ensure proper wrapping =====
@@ -126,76 +119,63 @@ const exportVisualPdf = async (
           // ===== FIX: Score gauge cards - fix SVG rendering =====
           clonedEl.querySelectorAll<HTMLElement>('svg').forEach(svg => {
             svg.style.overflow = 'visible';
-            // Ensure SVG dimensions are explicit for html2canvas
-            const svgEl = svg as unknown as SVGSVGElement;
-            if (svgEl.getAttribute('viewBox')) {
-              svg.style.width = '100%';
-              svg.style.height = 'auto';
-            }
           });
 
-          // Fix score gauge containers (aspect-ratio may not render in html2canvas)
-          clonedEl.querySelectorAll<HTMLElement>('[style*="aspect-ratio"]').forEach(el => {
-            const ratio = el.style.aspectRatio;
-            if (ratio) {
-              const [w, h] = ratio.split('/').map(Number);
-              if (w && h) {
-                const width = el.offsetWidth || 200;
-                el.style.height = `${(width * h) / w}px`;
-                el.style.aspectRatio = '';
-              }
-            }
-          });
-          // Also handle Tailwind aspect-ratio classes
+          // Fix aspect-ratio (html2canvas doesn't support it well)
           clonedEl.querySelectorAll<HTMLElement>('[class*="aspect-"]').forEach(el => {
-            const computedStyle = window.getComputedStyle(el);
-            const ratio = computedStyle.aspectRatio;
+            const computed = window.getComputedStyle(el);
+            const ratio = computed.aspectRatio;
             if (ratio && ratio !== 'auto') {
-              const [w, h] = ratio.split('/').map(s => parseFloat(s.trim()));
-              if (w && h) {
+              const parts = ratio.split('/').map(s => parseFloat(s.trim()));
+              if (parts.length === 2 && parts[0] && parts[1]) {
                 const width = el.offsetWidth || 200;
-                el.style.height = `${(width * h) / w}px`;
-                el.style.aspectRatio = '';
+                el.style.height = `${(width * parts[1]) / parts[0]}px`;
+                el.style.aspectRatio = 'auto';
               }
             }
           });
 
-          // ===== FIX: Score display overlay (absolute positioning inside gauge) =====
-          clonedEl.querySelectorAll<HTMLElement>('.absolute.inset-0').forEach(el => {
-            el.style.position = 'absolute';
-            el.style.top = '0';
-            el.style.left = '0';
-            el.style.right = '0';
-            el.style.bottom = '0';
-          });
-
-          // ===== FIX: Fotos section - KEEP actual photos instead of replacing =====
+          // ===== FIX: Fotos section - replace cross-origin images with summary =====
           const fotosSection = clonedEl.querySelector('#fotos-section') as HTMLElement;
           if (fotosSection) {
-            // Make all images visible and properly sized
-            fotosSection.querySelectorAll<HTMLElement>('img').forEach(img => {
-              img.style.display = 'block';
-              img.style.width = '100%';
-              img.style.height = '100%';
-              img.style.objectFit = 'cover';
-              img.setAttribute('crossorigin', 'anonymous');
-            });
-            // Hide hover overlay buttons (they show on hover only)
-            fotosSection.querySelectorAll<HTMLElement>('.opacity-0').forEach(el => {
-              el.style.display = 'none';
-            });
-            // Ensure photo grid is visible
-            fotosSection.querySelectorAll<HTMLElement>('.overflow-hidden').forEach(el => {
-              el.style.overflow = 'visible';
-            });
+            // Cross-origin images taint canvas → replace with text summary
+            const imgs = fotosSection.querySelectorAll('img');
+            const realPhotoCount = Array.from(imgs).filter(img => {
+              const src = img.getAttribute('src') || '';
+              return src.includes('apipainel') || src.includes('http');
+            }).length;
+            const badgeEl = fotosSection.querySelector('.absolute.-top-2, [class*="absolute"][class*="-top-2"]') as HTMLElement;
+            const countFromBadge = badgeEl ? parseInt(badgeEl.textContent?.trim() || '0', 10) : 0;
+            const count = Math.max(realPhotoCount, countFromBadge);
+
+            if (count > 0) {
+              fotosSection.innerHTML = `
+                <div style="border:1px solid #bbf7d0; border-radius:12px; padding:16px; background:#f0fdf4;">
+                  <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                    <span style="font-size:18px;">📷</span>
+                    <strong style="font-size:15px; color:#111827;">Fotos</strong>
+                    <span style="background:#16a34a; color:white; font-size:11px; padding:2px 8px; border-radius:10px;">ONLINE</span>
+                  </div>
+                  <p style="color:#374151; font-size:13px; margin:0;">${count} foto(s) encontrada(s)</p>
+                </div>
+              `;
+            } else {
+              fotosSection.style.display = 'none';
+            }
           }
 
-          // ===== FIX: Hide interactive-only elements that don't belong in PDF =====
-          clonedEl.querySelectorAll<HTMLElement>('.group-hover\\:opacity-100, [class*="group-hover"]').forEach(el => {
-            // Don't display hover-only overlays
-            if (el.classList.contains('opacity-0')) {
-              el.style.display = 'none';
+          // ===== FIX: Remove any remaining cross-origin images to prevent taint =====
+          clonedEl.querySelectorAll<HTMLImageElement>('img').forEach(img => {
+            const src = img.getAttribute('src') || '';
+            if (src.startsWith('http') && !src.includes(window.location.hostname)) {
+              // Replace cross-origin image with placeholder
+              img.style.display = 'none';
             }
+          });
+
+          // ===== FIX: Hide interactive-only elements =====
+          clonedEl.querySelectorAll<HTMLElement>('.opacity-0').forEach(el => {
+            el.style.display = 'none';
           });
 
           // ===== FIX: Labels should be visible =====
@@ -206,12 +186,25 @@ const exportVisualPdf = async (
             el.style.color = '#6b7280';
           });
 
-          // ===== FIX: Card borders and backgrounds =====
-          clonedEl.querySelectorAll<HTMLElement>('[class*="border-success"]').forEach(el => {
-            el.style.borderColor = '#86efac';
+          // ===== FIX: Ensure all text is dark =====
+          clonedEl.querySelectorAll<HTMLElement>('*').forEach(el => {
+            const computed = window.getComputedStyle(el);
+            // Fix any transparent or near-transparent text
+            if (computed.color === 'rgba(0, 0, 0, 0)' || computed.opacity === '0') {
+              el.style.color = '#111827';
+              el.style.opacity = '1';
+            }
+          });
+
+          // ===== FIX: Card backgrounds to white =====
+          clonedEl.querySelectorAll<HTMLElement>('[class*="bg-card"], [class*="bg-background"]').forEach(el => {
+            el.style.backgroundColor = '#ffffff';
           });
           clonedEl.querySelectorAll<HTMLElement>('[class*="bg-success-subtle"]').forEach(el => {
             el.style.backgroundColor = '#f0fdf4';
+          });
+          clonedEl.querySelectorAll<HTMLElement>('[class*="bg-muted"]').forEach(el => {
+            el.style.backgroundColor = '#f3f4f6';
           });
 
           // ===== FIX: Score section - hide if no data =====
