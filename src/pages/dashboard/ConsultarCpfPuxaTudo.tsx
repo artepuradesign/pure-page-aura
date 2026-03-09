@@ -3839,7 +3839,7 @@ Todos os direitos reservados.`;
 
           {/* CNPJ MEI */}
           {(!isSlimMode || isExclusiveMode) && showCnpjMeiSection && (
-            <div id="cnpj-mei-section">
+            <div id="cnpj-mei-section" className={cnpjMeiCount === 0 ? 'hidden' : ''}>
               <CnpjMeiSection cpfId={result.id} onCountChange={setCnpjMeiCount} />
             </div>
           )}
