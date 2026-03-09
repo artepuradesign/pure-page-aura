@@ -3706,7 +3706,7 @@ Todos os direitos reservados.`;
           )}
 
           {showEnderecosSection && (
-            <div id="enderecos-section">
+            <div id="enderecos-section" className={enderecosCount === 0 ? 'hidden' : ''}>
               <EnderecosSection cpfId={result.id} onCountChange={setEnderecosCount} />
             </div>
           )}
