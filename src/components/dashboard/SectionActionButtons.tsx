@@ -40,6 +40,25 @@ const downloadTxt = (text: string, filename: string) => {
   document.body.removeChild(element);
 };
 
+// Helper: fetch an image URL and return a base64 data URI
+const fetchImageAsBase64 = async (url: string): Promise<string | null> => {
+  try {
+    // Try via proxy to avoid CORS
+    const proxyUrl = `https://images.weserv.nl/?url=${encodeURIComponent(url)}&n=-1&output=jpg&q=80`;
+    const response = await fetch(proxyUrl);
+    if (!response.ok) return null;
+    const blob = await response.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+};
+
 // --- Visual PDF export using html2canvas ---
 const exportVisualPdf = async (
   container: HTMLDivElement,
@@ -49,6 +68,33 @@ const exportVisualPdf = async (
   toast.info("Gerando PDF visual, aguarde...");
 
   try {
+    // Pre-fetch all photos from fotos-section as base64 before html2canvas
+    const fotosSection = container.querySelector('#fotos-section');
+    const photoBase64Map = new Map<string, string>();
+    
+    if (fotosSection) {
+      const imgs = fotosSection.querySelectorAll('img') as NodeListOf<HTMLImageElement>;
+      const photoUrls: string[] = [];
+      imgs.forEach(img => {
+        const src = img.getAttribute('src') || '';
+        if (src && (src.startsWith('http') || src.startsWith('data:'))) {
+          photoUrls.push(src);
+        }
+      });
+
+      // Fetch all photos in parallel
+      const results = await Promise.all(
+        photoUrls.map(async (url) => {
+          if (url.startsWith('data:')) return { url, base64: url };
+          const base64 = await fetchImageAsBase64(url);
+          return { url, base64 };
+        })
+      );
+      results.forEach(r => {
+        if (r.base64) photoBase64Map.set(r.url, r.base64);
+      });
+    }
+
     const canvas = await html2canvas(container, {
       scale: 2,
       useCORS: true,
@@ -79,9 +125,8 @@ const exportVisualPdf = async (
             el.style.width = '100%';
           });
 
-          // ===== FIX: Input fields - ensure text is visible and aligned =====
+          // ===== FIX: Input fields - replace with div showing value =====
           clonedEl.querySelectorAll<HTMLElement>('input').forEach(el => {
-            // Replace input with a div showing its value (html2canvas often can't read input values)
             const value = (el as HTMLInputElement).value || '';
             const div = clonedDoc.createElement('div');
             div.textContent = value || '—';
@@ -101,11 +146,32 @@ const exportVisualPdf = async (
             el.parentNode?.replaceChild(div, el);
           });
 
-          // ===== FIX: Badges with absolute positioned counts =====
-          clonedEl.querySelectorAll<HTMLElement>('.relative.inline-flex').forEach(el => {
-            el.style.position = 'relative';
-            el.style.display = 'inline-flex';
-            el.style.overflow = 'visible';
+          // ===== FIX: Badge counts - convert absolute positioned numbers to inline =====
+          clonedEl.querySelectorAll<HTMLElement>('.relative.inline-flex').forEach(wrapper => {
+            const countEl = wrapper.querySelector('.absolute.-top-2, [class*="absolute"][class*="-top-2"]') as HTMLElement;
+            if (countEl) {
+              const count = countEl.textContent?.trim() || '';
+              // Remove the absolute positioned element
+              countEl.remove();
+              // Find the badge and append count inline
+              const badge = wrapper.querySelector('[class*="badge"], [class*="Badge"]') as HTMLElement;
+              if (badge && count) {
+                badge.style.display = 'inline-flex';
+                badge.style.alignItems = 'center';
+                badge.style.gap = '4px';
+                // Create inline count span
+                const inlineCount = clonedDoc.createElement('span');
+                inlineCount.textContent = `(${count})`;
+                inlineCount.style.backgroundColor = '#dc2626';
+                inlineCount.style.color = '#ffffff';
+                inlineCount.style.borderRadius = '9999px';
+                inlineCount.style.padding = '1px 6px';
+                inlineCount.style.fontSize = '10px';
+                inlineCount.style.fontWeight = '700';
+                inlineCount.style.marginLeft = '4px';
+                badge.appendChild(inlineCount);
+              }
+            }
           });
 
           // ===== FIX: Shortcut badges at top - ensure proper wrapping =====
@@ -135,32 +201,53 @@ const exportVisualPdf = async (
             }
           });
 
-          // ===== FIX: Fotos section - replace cross-origin images with summary =====
-          const fotosSection = clonedEl.querySelector('#fotos-section') as HTMLElement;
-          if (fotosSection) {
-            // Cross-origin images taint canvas → replace with text summary
-            const imgs = fotosSection.querySelectorAll('img');
-            const realPhotoCount = Array.from(imgs).filter(img => {
+          // ===== FIX: Fotos section - render actual photos in 2-column grid =====
+          const clonedFotosSection = clonedEl.querySelector('#fotos-section') as HTMLElement;
+          if (clonedFotosSection) {
+            const imgs = clonedFotosSection.querySelectorAll('img') as NodeListOf<HTMLImageElement>;
+            // Collect real photo sources (not placeholder)
+            const realPhotos: { src: string; base64: string }[] = [];
+            imgs.forEach(img => {
               const src = img.getAttribute('src') || '';
-              return src.includes('apipainel') || src.includes('http');
-            }).length;
-            const badgeEl = fotosSection.querySelector('.absolute.-top-2, [class*="absolute"][class*="-top-2"]') as HTMLElement;
-            const countFromBadge = badgeEl ? parseInt(badgeEl.textContent?.trim() || '0', 10) : 0;
-            const count = Math.max(realPhotoCount, countFromBadge);
+              if (src) {
+                // Check if we have a base64 version
+                const base64 = photoBase64Map.get(src);
+                if (base64) {
+                  realPhotos.push({ src, base64 });
+                }
+              }
+            });
 
-            if (count > 0) {
-              fotosSection.innerHTML = `
+            if (realPhotos.length > 0) {
+              // Determine layout: 1 photo → show 1, 2 photos → 2 per line, 3+ → up to 4 (2x2)
+              const photosToShow = realPhotos.slice(0, 4);
+              
+              // Build the photo grid HTML
+              let gridHtml = `
                 <div style="border:1px solid #bbf7d0; border-radius:12px; padding:16px; background:#f0fdf4;">
-                  <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                  <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
                     <span style="font-size:18px;">📷</span>
                     <strong style="font-size:15px; color:#111827;">Fotos</strong>
                     <span style="background:#16a34a; color:white; font-size:11px; padding:2px 8px; border-radius:10px;">ONLINE</span>
+                    <span style="background:#dc2626; color:white; font-size:10px; padding:1px 6px; border-radius:10px; font-weight:700;">${realPhotos.length}</span>
                   </div>
-                  <p style="color:#374151; font-size:13px; margin:0;">${count} foto(s) encontrada(s)</p>
-                </div>
+                  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
               `;
+              
+              photosToShow.forEach((photo, idx) => {
+                gridHtml += `
+                  <div style="border:1px solid #d1d5db; border-radius:8px; overflow:hidden; background:#fff;">
+                    <img src="${photo.base64}" alt="Foto ${idx + 1}" style="width:100%; height:200px; object-fit:cover; display:block;" crossorigin="anonymous" />
+                    <div style="padding:6px; text-align:center; background:#2563eb; color:white; font-size:13px; font-weight:500;">Foto ${idx + 1}</div>
+                  </div>
+                `;
+              });
+              
+              gridHtml += `</div></div>`;
+              clonedFotosSection.innerHTML = gridHtml;
             } else {
-              fotosSection.style.display = 'none';
+              // No photos could be loaded - hide the section
+              clonedFotosSection.style.display = 'none';
             }
           }
 
@@ -168,7 +255,6 @@ const exportVisualPdf = async (
           clonedEl.querySelectorAll<HTMLImageElement>('img').forEach(img => {
             const src = img.getAttribute('src') || '';
             if (src.startsWith('http') && !src.includes(window.location.hostname)) {
-              // Replace cross-origin image with placeholder
               img.style.display = 'none';
             }
           });
@@ -189,7 +275,6 @@ const exportVisualPdf = async (
           // ===== FIX: Ensure all text is dark =====
           clonedEl.querySelectorAll<HTMLElement>('*').forEach(el => {
             const computed = window.getComputedStyle(el);
-            // Fix any transparent or near-transparent text
             if (computed.color === 'rgba(0, 0, 0, 0)' || computed.opacity === '0') {
               el.style.color = '#111827';
               el.style.opacity = '1';
@@ -220,7 +305,6 @@ const exportVisualPdf = async (
         }
       }
     });
-
     const imgData = canvas.toDataURL("image/jpeg", 0.92);
     const imgWidth = canvas.width;
     const imgHeight = canvas.height;
