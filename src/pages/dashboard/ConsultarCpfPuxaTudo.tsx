@@ -3220,7 +3220,7 @@ Todos os direitos reservados.`;
             <>
               {/* Fotos - Usando FotosSection para consistência */}
               {!isSlimMode && (
-                <div id="fotos-section">
+                <div id="fotos-section" className={fotosCount === 0 ? 'hidden' : ''}>
                   <FotosSection cpfId={result.id} cpfNumber={result.cpf} onCountChange={setFotosCount} />
                 </div>
               )}
