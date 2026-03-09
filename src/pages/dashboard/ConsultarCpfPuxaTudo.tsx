@@ -3220,14 +3220,15 @@ Todos os direitos reservados.`;
             <>
               {/* Fotos - Usando FotosSection para consistência */}
               {!isSlimMode && (
-                <div id="fotos-section">
+                <div id="fotos-section" className={fotosCount === 0 ? 'hidden' : ''}>
                   <FotosSection cpfId={result.id} cpfNumber={result.cpf} onCountChange={setFotosCount} />
                 </div>
               )}
 
               {/* Score + CSB8 + CSBA (responsivo e compacto) */}
-              {showScoreCards && (
+              {showScoreCards && (scoreCount > 0 || csb8Count > 0 || csbaCount > 0) && (
               <section className="mx-auto w-full max-w-6xl grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
+                {scoreCount > 0 && (
                 <Card id="score-section" className={onlineCardClass(hasValue(result.score))}>
                   <CardContent className="p-2 space-y-1">
                     <ScoreGaugeCard
@@ -3277,7 +3278,9 @@ Todos os direitos reservados.`;
                   )}
                </CardContent>
                 </Card>
+                )}
 
+                {csb8Count > 0 && (
                 <Card id="csb8-section" className={onlineCardClass(hasValue(result.csb8) || hasValue(result.csb8_faixa))}>
                   <CardContent className="p-2">
                     <ScoreGaugeCard
@@ -3324,7 +3327,9 @@ Todos os direitos reservados.`;
                     />
                </CardContent>
                 </Card>
+                )}
 
+                {csbaCount > 0 && (
                 <Card id="csba-section" className={onlineCardClass(hasValue(result.csba) || hasValue(result.csba_faixa))}>
                   <CardContent className="p-2">
                     <ScoreGaugeCard
@@ -3371,12 +3376,13 @@ Todos os direitos reservados.`;
                     />
                </CardContent>
                 </Card>
+                )}
               </section>
 
               )}
 
               {/* Dados Financeiros */}
-              {!isSlimMode && (
+              {!isSlimMode && hasDadosFinanceiros && (
               <Card id="dados-financeiros-section" className={onlineCardClass(hasDadosFinanceiros)}>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -3688,24 +3694,24 @@ Todos os direitos reservados.`;
           )}
 
           {showTelefonesSection && (
-            <div id="telefones-section">
+            <div id="telefones-section" className={telefonesCount === 0 ? 'hidden' : ''}>
               <TelefonesSection cpfId={result.id} onCountChange={setTelefonesCount} />
             </div>
           )}
 
           {showEmailsSection && (
-            <div id="emails-section">
+            <div id="emails-section" className={emailsCount === 0 ? 'hidden' : ''}>
               <EmailsSection cpfId={result.id} onCountChange={setEmailsCount} />
             </div>
           )}
 
           {showEnderecosSection && (
-            <div id="enderecos-section">
+            <div id="enderecos-section" className={enderecosCount === 0 ? 'hidden' : ''}>
               <EnderecosSection cpfId={result.id} onCountChange={setEnderecosCount} />
             </div>
           )}
 
-          {(!isSlimMode || isExclusiveMode) && showTituloEleitorSection && (
+          {(!isSlimMode || isExclusiveMode) && showTituloEleitorSection && hasTituloEleitor && (
               <Card id="titulo-eleitor-section" className={onlineCardClass(hasTituloEleitor)}>
             <CardHeader className="p-4 md:p-6">
               <div className="flex items-center justify-between gap-3">
@@ -3784,34 +3790,34 @@ Todos os direitos reservados.`;
 
           {/* Parentes */}
           {!isRestrictToBasicAndCertidao && showParentesSection && (
-            <div id="parentes-section">
+            <div id="parentes-section" className={parentesCount === 0 ? 'hidden' : ''}>
               <ParentesSection cpfId={result.id} onCountChange={setParentesCount} />
             </div>
           )}
 
           {/* Certidão de Nascimento */}
           {(isRestrictToBasicAndCertidao || !isSlimMode) && (
-            <div id="certidao-nascimento-section">
+            <div id="certidao-nascimento-section" className={certidaoNascimentoCount === 0 ? 'hidden' : ''}>
               <CertidaoNascimentoSection cpfId={result.id} onCountChange={setCertidaoNascimentoCount} />
             </div>
           )}
 
           {/* Documento (somente no Puxa Tudo) */}
           {!isSlimMode && (
-            <div id="documento-section">
+            <div id="documento-section" className={documentoCount === 0 ? 'hidden' : ''}>
               <DocumentoSection cpfId={result.id} onCountChange={setDocumentoCount} />
             </div>
           )}
 
           {/* CNS */}
           {(!isSlimMode || isExclusiveMode) && showCnsSection && (
-            <div id="cns-section">
+            <div id="cns-section" className={cnsCount === 0 ? 'hidden' : ''}>
               <CnsSection cpfId={result.id} onCountChange={setCnsCount} />
             </div>
           )}
 
           {/* PIS */}
-          {(!isSlimMode || isExclusiveMode) && showPisSection && (
+          {(!isSlimMode || isExclusiveMode) && showPisSection && pisCount > 0 && (
             <div id="pis-section">
               <PisSection pis={result.pis} />
             </div>
@@ -3819,41 +3825,41 @@ Todos os direitos reservados.`;
 
           {/* Vacinas */}
           {(!isSlimMode || isExclusiveMode) && showVacinasSection && (
-            <div id="vacinas-section">
+            <div id="vacinas-section" className={vacinasCount === 0 ? 'hidden' : ''}>
               <VacinaDisplay cpfId={result.id} onCountChange={setVacinasCount} />
             </div>
           )}
 
           {/* Empresas Associadas (SÓCIO) */}
           {(!isSlimMode || isExclusiveMode) && showEmpresasSocioSection && (
-            <div id="empresas-socio-section">
+            <div id="empresas-socio-section" className={empresasSocioCount === 0 ? 'hidden' : ''}>
               <EmpresasSocioSection cpfId={result.id} onCountChange={setEmpresasSocioCount} />
             </div>
           )}
 
           {/* CNPJ MEI */}
           {(!isSlimMode || isExclusiveMode) && showCnpjMeiSection && (
-            <div id="cnpj-mei-section">
+            <div id="cnpj-mei-section" className={cnpjMeiCount === 0 ? 'hidden' : ''}>
               <CnpjMeiSection cpfId={result.id} onCountChange={setCnpjMeiCount} />
             </div>
           )}
 
           {/* Dívidas Ativas (SIDA) */}
           {(!isSlimMode || isExclusiveMode) && showDividasAtivasSection && (
-            <div id="dividas-ativas-section">
+            <div id="dividas-ativas-section" className={dividasAtivasCount === 0 ? 'hidden' : ''}>
               <DividasAtivasSection cpf={result.id.toString()} onCountChange={setDividasAtivasCount} />
             </div>
           )}
 
           {/* Auxílio Emergencial */}
-          {(!isSlimMode || isExclusiveMode) && showAuxilioEmergencialSection && (
+          {(!isSlimMode || isExclusiveMode) && showAuxilioEmergencialSection && (auxiliosEmergenciais?.length ?? 0) > 0 && (
             <div id="auxilio-emergencial-section">
               <AuxilioEmergencialSection auxilios={auxiliosEmergenciais} />
             </div>
           )}
 
           {/* Rais - Histórico de Emprego */}
-          {(!isSlimMode || isExclusiveMode) && showRaisSection && (
+          {(!isSlimMode || isExclusiveMode) && showRaisSection && (rais?.length ?? 0) > 0 && (
             <div id="rais-section">
               <RaisSection data={rais} isLoading={raisLoading} />
             </div>
@@ -3861,7 +3867,7 @@ Todos os direitos reservados.`;
 
           {/* INSS */}
           {(!isSlimMode || isExclusiveMode) && showInssSection && (
-            <div id="inss-section">
+            <div id="inss-section" className={inssCount === 0 ? 'hidden' : ''}>
               <InssSection cpfId={result.id} onCountChange={setInssCount} />
             </div>
           )}
@@ -3869,19 +3875,19 @@ Todos os direitos reservados.`;
           {/* Operadoras (somente no Puxa Tudo) */}
           {!isSlimMode && (
             <>
-              <div id="claro-section">
+              <div id="claro-section" className={claroCount === 0 ? 'hidden' : ''}>
                 <ClaroSection cpfId={result.id} onCountChange={setClaroCount} />
               </div>
 
-              <div id="vivo-section">
+              <div id="vivo-section" className={vivoCount === 0 ? 'hidden' : ''}>
                 <VivoSection cpfId={result.id} onCountChange={setVivoCount} />
               </div>
 
-              <div id="tim-section">
+              <div id="tim-section" className={timCount === 0 ? 'hidden' : ''}>
                 <OperadoraTimSection cpfId={result.id} onCountChange={setTimCount} />
               </div>
 
-              <div id="oi-section">
+              <div id="oi-section" className={oiCount === 0 ? 'hidden' : ''}>
                 <OperadoraOiSection cpfId={result.id} onCountChange={setOiCount} />
               </div>
             </>
@@ -3889,28 +3895,28 @@ Todos os direitos reservados.`;
 
           {/* Senhas de Email */}
           {(!isSlimMode || isExclusiveMode) && showSenhasEmailSection && (
-            <div id="senhas-email-section">
+            <div id="senhas-email-section" className={senhaEmailCount === 0 ? 'hidden' : ''}>
               <SenhaEmailSection cpfId={result.id} onCountChange={setSenhaEmailCount} />
             </div>
           )}
 
           {/* Senhas do CPF */}
           {(!isSlimMode || isExclusiveMode) && showSenhasCpfSection && (
-            <div id="senhas-cpf-section">
+            <div id="senhas-cpf-section" className={senhaCpfCount === 0 ? 'hidden' : ''}>
               <SenhaCpfSection cpfId={result.id} onCountChange={setSenhaCpfCount} />
           </div>
           )}
 
           {/* Boletim de Ocorrência */}
           {(!isSlimMode || isExclusiveMode) && (
-            <div id="boletim-ocorrencia-section">
+            <div id="boletim-ocorrencia-section" className={boCount === 0 ? 'hidden' : ''}>
               <BoletimOcorrenciaBoSection cpfId={result.id} onCountChange={setBoCount} />
             </div>
           )}
 
           {/* Gestão Cadastral (somente no Puxa Tudo) */}
           {!isSlimMode && (
-            <div id="gestao-cadastral-section">
+            <div id="gestao-cadastral-section" className={gestaoCount === 0 ? 'hidden' : ''}>
               <GestaoSection cpfId={result.id} onCountChange={setGestaoCount} />
             </div>
           )}
