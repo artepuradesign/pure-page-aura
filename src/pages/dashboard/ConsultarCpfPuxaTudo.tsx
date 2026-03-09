@@ -3382,7 +3382,7 @@ Todos os direitos reservados.`;
               )}
 
               {/* Dados Financeiros */}
-              {!isSlimMode && (
+              {!isSlimMode && hasDadosFinanceiros && (
               <Card id="dados-financeiros-section" className={onlineCardClass(hasDadosFinanceiros)}>
             <CardHeader>
               <div className="flex items-center justify-between">
